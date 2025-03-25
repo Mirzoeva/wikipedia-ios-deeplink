@@ -275,6 +275,12 @@ class PlacesViewController: ArticleLocationCollectionViewController, UISearchBar
 
         configureNavigationBar(titleConfig: titleConfig, closeButtonConfig: nil, profileButtonConfig: profileButtonConfig, searchBarConfig: searchConfig, hideNavigationBarOnScroll: false)
     }
+    
+    @objc(showCoordinatesWithLatitude:longitude:)
+    func showCoordinatesWithLatitude(latitude: Double, longitude: Double) {
+        locationManager.stopMonitoringLocation()
+        zoomAndPanMapView(toLocation: CLLocation(latitude: latitude, longitude: longitude))
+    }
 
     private func updateScopeBarVisibility() {
 

@@ -344,8 +344,8 @@ NSString *const WMFLanguageVariantAlertsLibraryVersion = @"WMFLanguageVariantAle
     if (shouldOpenAppOnSearchTab && self.selectedIndex != WMFAppTabTypeSearch) {
         [self setSelectedIndex:WMFAppTabTypeSearch];
         [[self searchViewController] makeSearchBarBecomeFirstResponder];
-    } else if (self.selectedIndex != WMFAppTabTypeMain) {
-        [self setSelectedIndex:WMFAppTabTypeMain];
+    } else if (self.selectedIndex != WMFAppTabTypePlaces) {
+        [self setSelectedIndex:WMFAppTabTypePlaces];
     }
 }
 
@@ -1203,10 +1203,18 @@ NSString *const WMFLanguageVariantAlertsLibraryVersion = @"WMFLanguageVariantAle
             [self dismissPresentedViewControllers];
             [self setSelectedIndex:WMFAppTabTypePlaces];
             [self.currentTabNavigationController popToRootViewControllerAnimated:animated];
+            
+            [[self placesViewController] updateViewModeToMap];
+            
+            NSNumber *latNumber = activity.userInfo[@"lat"];
+            NSNumber *lonNumber = activity.userInfo[@"lon"];
             NSURL *articleURL = activity.wmf_linkURL;
-            if (articleURL) {
-                // For "View on a map" action to succeed, view mode has to be set to map.
-                [[self placesViewController] updateViewModeToMap];
+            
+            if (latNumber && lonNumber) {
+                double lat = [latNumber doubleValue];
+                double lon = [lonNumber doubleValue];
+                [[self placesViewController] showCoordinatesWithLatitude:lat longitude:lon];
+            } else if (articleURL) {
                 [[self placesViewController] showArticleURL:articleURL];
             }
         } break;
