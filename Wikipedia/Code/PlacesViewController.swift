@@ -56,6 +56,8 @@ class PlacesViewController: ArticleLocationCollectionViewController, UISearchBar
     fileprivate var searching: Bool = false
     // SINGLETONTODO
     fileprivate let imageController = MWKDataStore.shared().cacheController.imageCache
+    
+    fileprivate var pendingCoordinates: CLLocation?
 
     fileprivate var _displayCountForTopPlaces: Int?
     fileprivate var displayCountForTopPlaces: Int {
@@ -235,6 +237,14 @@ class PlacesViewController: ArticleLocationCollectionViewController, UISearchBar
         locationManager.stopMonitoringLocation()
         mapView.showsUserLocation = false
     }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        
+        guard let pendingCoordinates else { return }
+        showCoordinates(coordinates)
+        pendingCoordinates = nil
+    }
 
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
         super.traitCollectionDidChange(previousTraitCollection)
@@ -274,6 +284,21 @@ class PlacesViewController: ArticleLocationCollectionViewController, UISearchBar
         let searchConfig = WMFNavigationBarSearchConfig(searchResultsController: nil, searchControllerDelegate: nil, searchResultsUpdater: self, searchBarDelegate: self, searchBarPlaceholder: WMFLocalizedString("places-search-default-text", value:"Search Places", comment:"Placeholder text that displays where is there no current place search {{Identical|Search}}"), showsScopeBar: showsScopeBar, scopeButtonTitles: scopeButtonTitles)
 
         configureNavigationBar(titleConfig: titleConfig, closeButtonConfig: nil, profileButtonConfig: profileButtonConfig, searchBarConfig: searchConfig, hideNavigationBarOnScroll: false)
+    }
+    
+    @objc(showCoordinatesWithLatitude:longitude:)
+    func showCoordinatesWithLatitude(latitude: Double, longitude: Double) {
+        let coordinates = CLLocation(latitude: latitude, longitude: longitude)
+        if viewIfLoaded != nil {
+            showCoordinates(coordinates)
+        } else {
+            pendingCoordinates = coordinates
+        }
+    }
+    
+    private func showCoordinates(_ coordinates: CLLocation) {
+        locationManager.stopMonitoringLocation()
+        zoomAndPanMapView(toLocation: coordinates)
     }
 
     private func updateScopeBarVisibility() {
